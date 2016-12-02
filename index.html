@@ -1,0 +1,119 @@
+<html ng-app="listaTelefonica">
+<head>
+    <title>Lista Telefonica</title>
+
+    <!--importa boostrap-->
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/bootstrap.css">
+    
+    <!--ajusta propriedades do bootstrap-->
+    <style>
+        .jumbotron {
+            margin-top: 20px;
+            margin-right: auto;
+            margin-left: auto;
+            text-align: center;
+            width: 400px;
+        }
+        .table {
+            margin-top: 20px;
+        }
+        .form-control {
+            margin-top: 5px;
+        }
+        .btn {
+            margin-top: 5px;
+        }
+        .selecionado {
+            background: yellow;
+        }
+    </style>
+
+    <!--importa angular-->
+    <script src="lib/angular/angular.js"></script>
+
+    <script>
+        angular.module("listaTelefonica", []);
+        angular.module("listaTelefonica").controller("listaTelefonicaCtrl", function($scope) {
+
+            //definindo atributos do escopo desta controller
+            $scope.appName="Lista Telefonica";
+            $scope.contatos= [  {nome:"Pedro", telefone:"99999999", cor:"blue"},
+                                {nome:"Ana", telefone:"88888888", cor:"yellow"},
+                                {nome:"Maria", telefone:"77777777", cor:"red"}];
+
+            $scope.operadoras = [   {nome:"Oi", codigo:14, categoria:"Celular"},
+                                    {nome:"Vivo", codigo:15, categoria:"Celular"},
+                                    {nome:"Tim", codigo:41, categoria:"Celular"},
+                                    {nome:"GVT", codigo:25, categoria:"Fixo"},
+                                    {nome:"Embratel", codigo:21, categoria:"Fixo"}];
+
+            $scope.adicionarContato = function(contato) {
+                console.log("Adicionando " + contato.nome);
+                //MANTRA 1 (a evitar): Nunca ler $scope dentro da controller. Só escrever.
+                //$scope.contatos.push({nome: $scope.nome, telefone: $scope.telefone});
+                $scope.contatos.push(angular.copy(contato));
+                delete $scope.contato;
+            };
+            $scope.apagarContatos = function(contatos) {
+                $scope.contatos = contatos.filter(function(contato) {
+                    if (!contato.selecionado) return contato;
+                });
+            };
+            $scope.isContatoSelecionado = function(contatos) {
+                return contatos.some(function(contato) {
+                    return contato.selecionado;
+                });
+            };
+        });
+    </script>
+
+</head>
+
+<!-- define o body como sendo toda a view -->
+<body ng-controller="listaTelefonicaCtrl">
+
+    <div class="jumbotron">
+
+        <!-- ng-bind atrela um atributo do scope a um elemento da view-->
+        <!--h4 ng-bind="app"></h4-->
+        <!--Tb pode ser exibido como abaixo-->
+        <h3>{{appName}}</h3>
+        <table class="table" ng-show="contatos.length > 0">
+            <tr>
+                <th></th>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>Operadora</th>
+                <th></th>
+            </tr>
+
+            <!-- diretiva ng-repeat instancia um template para cada item de uma coleção -->
+            <tr ng-class="{selecionado: contato.selecionado}" ng-repeat="contato in contatos">
+                    <td><input type="checkbox" ng-model="contato.selecionado"/></td>
+                    <td>{{contato.nome}}</td>
+                    <td>{{contato.telefone}}</td>
+                    <td>{{contato.operadora.nome}}</td>
+                    <td><div style="width: 20px; height: 20px" ng-style="{'background-color': contato.cor}"></div></td>
+            </tr>
+        </table>
+        <hr>
+        <!-- diretiva ng-model atualiza view->propriedade do scope-->
+        <input class="form-control" type="text" ng-model="contato.nome" placeholder="Nome">
+        <input class="form-control" type="text" ng-model="contato.telefone" placeholder="Telefone">
+        <select class="form-control"
+            ng-model="contato.operadora"
+            ng-options="operadora.nome group by operadora.categoria for operadora in operadoras">
+            <option value="">Seleciona uma operadora</option>
+        </select>
+        <!-- botão com bind de enabled e action de click -->
+        <button class="btn btn-primary btn-block" ng-click="adicionarContato(contato)"
+            ng-disabled="!contato.nome || !contato.telefone">
+            Adicionar contato</button>
+        <button class="btn btn-danger btn-block" ng-click="apagarContatos(contatos)"
+            ng-disabled="!isContatoSelecionado(contatos)">
+            Remover contato</button>
+    </div>
+    <!--o '' abaixo serve para escapar o conteúdo e footer não ser interpretado como nome de um atributo do $scope -->
+    <div ng-include="'footer.html'"></div>
+</body>
+</html>
